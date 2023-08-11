@@ -47,6 +47,14 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  void restartSession() {
+    setState(() {
+      isRunning = false;
+      totalSeconds = twentyFiveMinutes;
+    });
+    timer.cancel();
+  }
+
   String format(int seconds) {
     var duration = Duration(seconds: seconds);
     return duration.toString().split(".").first.substring(2, 7);
@@ -60,16 +68,44 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           Flexible(
             flex: 1,
-            child: Container(
-              alignment: Alignment.bottomCenter,
-              child: Text(
-                format(totalSeconds),
-                style: TextStyle(
-                  color: Theme.of(context).cardColor,
-                  fontSize: 89,
-                  fontWeight: FontWeight.w600,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Flexible(flex: 1, child: Container()),
+                Flexible(
+                  flex: 3,
+                  child: Text(
+                    format(totalSeconds),
+                    style: TextStyle(
+                      color: Theme.of(context).cardColor,
+                      fontSize: 89,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
-              ),
+                Flexible(
+                  flex: 1,
+                  child: isRunning
+                      ? Container(
+                          padding: const EdgeInsets.only(bottom: 20),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              IconButton(
+                                color: Theme.of(context).cardColor,
+                                iconSize: 45,
+                                onPressed: restartSession,
+                                icon: const Icon(
+                                  Icons.restart_alt_outlined,
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : Container(),
+                ),
+              ],
             ),
           ),
           Flexible(
