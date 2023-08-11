@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:toonflix/services/api_service.dart';
 import 'package:toonflix/webtoon.dart';
 // import 'package:toonflix/ui_challenge.dart';
 // import 'package:toonflix/widgets/stateful_test.dart';
@@ -8,5 +9,7 @@ void main() {
   // runApp(const UIChallenge());
   // runApp(const StatefulTest());
   // runApp(const Pomodoro());
+
+  ApiService().getTodaysToons();
   runApp(const Webtoon());
 }
