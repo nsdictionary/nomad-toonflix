@@ -13,14 +13,34 @@ class _HomeScreenState extends State<HomeScreen> {
   int totalSeconds = twentyFiveMinutes;
   bool isRunning = false;
   int totalPomodoros = 0;
+  int totalRounds = 0;
+  int totalGoals = 0;
   late Timer timer;
+  bool isRestTime = false;
+
+  final totalMinutes = [15, 20, 25, 30, 35];
+  int selectedMinuteIndex = 2;
 
   void onTick(Timer timer) {
     if (totalSeconds == 0) {
       setState(() {
-        totalPomodoros = totalPomodoros + 1;
+        if (isRestTime) {
+          isRestTime = false;
+        } else {
+          // increase total pomodoro if not rest time
+          totalPomodoros = totalPomodoros + 1;
+        }
+
         isRunning = false;
-        totalSeconds = twentyFiveMinutes;
+        totalSeconds = totalMinutes[selectedMinuteIndex] * 60;
+
+        totalGoals = totalPomodoros ~/ 4;
+        totalRounds = totalPomodoros ~/ 4;
+        if (totalRounds >= 4) {
+          totalRounds = 0;
+          totalSeconds = 5 * 60;
+          isRestTime = true;
+        }
       });
       timer.cancel();
     } else {
@@ -50,9 +70,20 @@ class _HomeScreenState extends State<HomeScreen> {
   void restartSession() {
     setState(() {
       isRunning = false;
-      totalSeconds = twentyFiveMinutes;
+      totalSeconds = totalMinutes[selectedMinuteIndex] * 60;
     });
     timer.cancel();
+  }
+
+  void setTotalSecond(index) {
+    if (isRunning) {
+      return;
+    }
+
+    setState(() {
+      selectedMinuteIndex = index;
+      totalSeconds = totalMinutes[index] * 60;
+    });
   }
 
   String format(int seconds) {
@@ -67,7 +98,7 @@ class _HomeScreenState extends State<HomeScreen> {
       body: Column(
         children: [
           Flexible(
-            flex: 1,
+            flex: 2,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               crossAxisAlignment: CrossAxisAlignment.end,
@@ -75,18 +106,20 @@ class _HomeScreenState extends State<HomeScreen> {
                 Flexible(flex: 1, child: Container()),
                 Flexible(
                   flex: 3,
-                  child: Text(
-                    format(totalSeconds),
-                    style: TextStyle(
-                      color: Theme.of(context).cardColor,
-                      fontSize: 89,
-                      fontWeight: FontWeight.w600,
+                  child: Center(
+                    child: Text(
+                      format(totalSeconds),
+                      style: TextStyle(
+                        color: Theme.of(context).cardColor,
+                        fontSize: 89,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ),
                 Flexible(
                   flex: 1,
-                  child: isRunning
+                  child: (isRunning && !isRestTime)
                       ? Container(
                           padding: const EdgeInsets.only(bottom: 20),
                           child: Row(
@@ -109,6 +142,29 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           Flexible(
+            flex: 1,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: 5,
+                    itemBuilder: (context, index) {
+                      return GestureDetector(
+                        onTap: () => setTotalSecond(index),
+                        child: TimeCard(
+                          minute: totalMinutes[index],
+                          isSelected: index == selectedMinuteIndex,
+                        ),
+                      );
+                    },
+                  ),
+                )
+              ],
+            ),
+          ),
+          Flexible(
             flex: 3,
             child: Center(
               child: IconButton(
@@ -123,8 +179,29 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
+          // Flexible(
+          //   flex: 1,
+          //   child: Row(
+          //     mainAxisAlignment: MainAxisAlignment.end,
+          //     children: [
+          //       const SizedBox(
+          //         height: 100,
+          //       ),
+          //       Text(
+          //         'Total $totalPomodoros Pomos',
+          //         style: TextStyle(
+          //           fontSize: 20,
+          //           color: Theme.of(context).textTheme.displayLarge!.color,
+          //         ),
+          //       ),
+          //       const SizedBox(
+          //         width: 10,
+          //       )
+          //     ],
+          //   ),
+          // ),
           Flexible(
-            flex: 1,
+            flex: 2,
             child: Row(
               children: [
                 Expanded(
@@ -135,26 +212,62 @@ class _HomeScreenState extends State<HomeScreen> {
                         top: Radius.circular(50),
                       ),
                     ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        Text(
-                          'Pomodoros',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w600,
-                            color:
-                                Theme.of(context).textTheme.displayLarge!.color,
-                          ),
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              '$totalRounds/4',
+                              style: TextStyle(
+                                fontSize: 35,
+                                fontWeight: FontWeight.w500,
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .displayLarge!
+                                    .color,
+                              ),
+                            ),
+                            Text(
+                              'ROUND',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w600,
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .displayLarge!
+                                    .color,
+                              ),
+                            ),
+                          ],
                         ),
-                        Text(
-                          '$totalPomodoros',
-                          style: TextStyle(
-                            fontSize: 58,
-                            fontWeight: FontWeight.w600,
-                            color:
-                                Theme.of(context).textTheme.displayLarge!.color,
-                          ),
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              '$totalGoals/12',
+                              style: TextStyle(
+                                fontSize: 35,
+                                fontWeight: FontWeight.w500,
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .displayLarge!
+                                    .color,
+                              ),
+                            ),
+                            Text(
+                              'GOAL',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w600,
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .displayLarge!
+                                    .color,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -164,6 +277,46 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class TimeCard extends StatelessWidget {
+  final int minute;
+  final bool isSelected;
+
+  const TimeCard({
+    super.key,
+    required this.minute,
+    required this.isSelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Container(
+        decoration: BoxDecoration(
+          color: isSelected
+              ? Theme.of(context).cardColor
+              : Theme.of(context).colorScheme.background,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        width: 100,
+        height: 50,
+        child: Center(
+          child: Text(
+            minute.toString(),
+            style: TextStyle(
+              color: isSelected
+                  ? Theme.of(context).colorScheme.background
+                  : Theme.of(context).cardColor.withOpacity(0.5),
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
       ),
     );
   }
